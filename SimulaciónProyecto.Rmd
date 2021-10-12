@@ -1,0 +1,98 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+plt<-TRUE
+for(i in 1:20){
+  acum_vc <- c()
+    for(i in 1:16){
+      m <- 1.5
+      a <- 2 + runif(1,-2,2)
+      b <- 0.08 + runif(1,-0.08,0.02)
+      c <- 0.08 + runif(1,-0.08,0.02)
+      g <- 0.13 + runif(1,-0.7,0.7)
+      n <- 0.475 + runif(1,-0.375,0.375)
+      p <- 0.5 + runif(1,-0.5,0.5)
+      acum_vc[i] <- capacidad_vectorial(m,a,b,c,p,n)+sum(acum_vc)
+    }
+  if(plt){plot(acum_vc,type='l',ylab='VC',xlab='Tiempo (Semanas)');title('CAPACIDAD VECTORIAL ACUMULATIVA');plt<-FALSE}
+  lines(acum_vc,col=round(runif(1,0,16)))
+}
+```
+
+
+
+
+
+```{r}
+capacidad_vectorial <- function(m,a,b,c,p,n){
+  vc <- m*(a**2)*b*c*(p**n)/-log(p)
+}
+```
+
+```{r}
+simulacion <- function(infectados, suceptibles,vc,N){
+  for(i in 2:N){
+    infectados[i] <- infectados[i-1] + (vc/suceptibles[i-1]) - infectados[i-1]*0.2 
+    suceptibles[i] <- suceptibles[i-1] - (vc/suceptibles[i-1])
+  } 
+  return(list(infectados,suceptibles))
+}
+
+N <- 40
+vc <- c()
+for(i in 1:N){
+  m <- 1.5
+  a <- 2 + runif(1,-2,2)
+  b <- 0.08 + runif(1,-0.08,0.02)
+  c <- 0.08 + runif(1,-0.08,0.02)
+  g <- 0.13 + runif(1,-0.7,0.7)
+  n <- 0.475 + runif(1,-0.375,0.375)
+  p <- 0.5 + runif(1,-0.5,0.5)
+  vc[i] <- capacidad_vectorial(m,a,b,c,p,n) + sum(vc)
+}
+
+resultados <- simulacion(10,1000,vc[i],10)
+
+plot(seq(0,length(resultados[[1]])*10,length=10),resultados[[1]]/80000,type='l', xlab='Tiempo', ylab='Infectados', col='orange',lwd = 3)
+title('Modelo Analitico')
+```
+
+```{r}
+simulacion <- function(rho,mu,pi,epsilon){
+  delta = 1-rho
+  delta_p = delta*pi
+  delta_u = delta*(1-pi)
+  delta_u_p = delta_u+delta_p*(1-delta_u)
+  mu_u = mu*(1-pi)
+  mu_p = mu*pi
+  mu_u_p = mu_u+mu_p*(1-mu_u)
+  phi = (1-delta_u_p)*(1-mu_u_p)
+  phi_ = (1-pi)*phi+pi*phi
+  a = epsilon*phi_
+  return(a)
+}
+
+N <- 16
+vc <- c()
+for(i in 1:N){
+  m <- 1.5
+  a <- 2 + runif(1,-2,2)
+  b <- 0.08 + runif(1,-0.08,0.02)
+  c <- 0.08 + runif(1,-0.08,0.02)
+  g <- 0.13 + runif(1,-0.7,0.7)
+  n <- 0.475 + runif(1,-0.375,0.375)
+  p <- 0.5 + runif(1,-0.5,0.5)
+  vc[i] <- capacidad_vectorial(m,a,b,c,p,n)+sum(vc)
+}
+resultados <- c()
+for(i in 1:N){
+  resultados[i] <- simulacion(0.5,0.08,0.09,vc[i])
+}
+
+plot(resultados,type='l',xlab='Tiempo (Semanas)', ylab='# de Infectados')
+title('Modelo \n rho = 0.5, mu = 0.08, pi = 0.09')
+```
